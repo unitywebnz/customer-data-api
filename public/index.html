@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Data API</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: #2d3748;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #a0aec0;
+      font-size: 0.9rem;
+    }
+
+    .controls {
+      padding: 20px 30px;
+      background: #f7fafc;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #667eea;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: #5568d3;
+    }
+
+    button:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .page-info {
+      color: #4a5568;
+      font-size: 0.9rem;
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .customer-list {
+      padding: 30px;
+    }
+
+    .customer-card {
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .customer-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .customer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .customer-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .customer-id {
+      background: #667eea;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .customer-detail {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #4a5568;
+      font-size: 0.9rem;
+    }
+
+    .detail-item strong {
+      color: #2d3748;
+    }
+
+    .customer-title {
+      color: #667eea;
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #4a5568;
+      font-size: 1.1rem;
+    }
+
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: #e53e3e;
+      font-size: 1.1rem;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: #4a5568;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      background: #2d3748;
+      color: #a0aec0;
+      padding: 20px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .pagination {
+        justify-content: center;
+      }
+
+      .customer-detail {
+        flex-direction: column;
+        gap: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Customer Data</h1>
+      <p>Backend Developer Test - Customer Data API</p>
+    </header>
+
+    <div class="controls">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search by name, email, or company...">
+      </div>
+      <div class="pagination">
+        <button id="prevBtn" disabled>Previous</button>
+        <span class="page-info" id="pageInfo">Page 1</span>
+        <button id="nextBtn" disabled>Next</button>
+      </div>
+    </div>
+
+    <div class="customer-list" id="customerList">
+      <div class="loading">Loading customers...</div>
+    </div>
+
+    <footer>
+      Backend API Example | Built with TypeScript, Express, and SQLite | By Hamish Wadham | 30 April 2026
+    </footer>
+  </div>
+
+  <script>
+    const API_BASE = '/api/customers';
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentSearch = '';
+    let debounceTimer;
+
+    // DOM Elements
+    const customerList = document.getElementById('customerList');
+    const searchInput = document.getElementById('searchInput');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+
+    // Fetch customers
+    async function fetchCustomers(page = 1, search = '') {
+      try {
+        // Disable buttons and show loading
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        customerList.innerHTML = '<div class="loading">Loading customers...</div>';
+        
+        const url = `${API_BASE}?page=${page}&limit=10${search ? '&search=' + encodeURIComponent(search) : ''}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch customers');
+        }
+
+        const data = await response.json();
+        
+        currentPage = data.pagination.page;
+        totalPages = data.pagination.totalPages;
+        
+        renderCustomers(data.data);
+        updatePagination();
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+        customerList.innerHTML = '<div class="error">Error loading customers. Please try again later.</div>';
+      } finally {
+        // Re-enable buttons
+        updatePagination();
+      }
+    }
+
+    // Render customers
+    function renderCustomers(customers) {
+      if (customers.length === 0) {
+        customerList.innerHTML = '<div class="no-results">No customers found.</div>';
+        return;
+      }
+
+      customerList.innerHTML = customers.map(customer => `
+        <div class="customer-card">
+          <div class="customer-header">
+            <div class="customer-name">${escapeHtml(customer.first_name)} ${escapeHtml(customer.last_name)}</div>
+            <div class="customer-id">#${customer.id}</div>
+          </div>
+          <div class="customer-detail">
+            <div class="detail-item"><strong>Email:</strong> ${escapeHtml(customer.email)}</div>
+            <div class="detail-item"><strong>Company:</strong> ${escapeHtml(customer.company || 'N/A')}</div>
+            <div class="detail-item"><strong>City:</strong> ${escapeHtml(customer.city || 'N/A')}</div>
+          </div>
+          ${customer.title ? `<div class="customer-title">${escapeHtml(customer.title)}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // Update pagination controls
+    function updatePagination() {
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Event listeners
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        fetchCustomers(currentPage - 1, currentSearch);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        fetchCustomers(currentPage + 1, currentSearch);
+      }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        currentSearch = e.target.value.trim();
+        currentPage = 1;
+        fetchCustomers(1, currentSearch);
+      }, 300);
+    });
+
+    // Initial load
+    fetchCustomers();
+  </script>
+</body>
+</html>
