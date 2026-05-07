@@ -1,6 +1,6 @@
 # Customer Data API
 
-Backend developer test solution for Catch Design. A RESTful API that imports CSV customer data into a SQLite database and exposes it with pagination, plus a simple web frontend.
+A RESTful API that imports CSV customer data into a SQLite database and exposes it with pagination, plus a simple web frontend.
 
 ## Quick Start
 
